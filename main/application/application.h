@@ -12,9 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "application/application.h"
+#pragma once
 
-extern "C" void app_main() {
-    dsx::Application application{};
-    application.run();
-}
+#include <bluetooth/bluetooth_service.h>
+
+namespace dsx {
+
+class Application final {
+  public:
+    Application();
+    ~Application();
+
+    void run();
+
+  private:
+    BluetoothService m_bluetoothService{};
+};
+
+} // namespace dsx
