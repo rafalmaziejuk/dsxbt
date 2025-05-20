@@ -12,9 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "application/application.h"
+#pragma once
 
-extern "C" void app_main() {
-    dsx::Application application{};
-    application.run();
-}
+#include <utils/result.h>
+
+#include <esp_bt.h>
+
+namespace dsx {
+
+struct BluetoothServiceConfig {
+    esp_bt_mode_t mode;
+};
+
+class BluetoothService final {
+  public:
+    BluetoothService();
+    ~BluetoothService();
+
+    [[nodiscard]] Result initialize(const BluetoothServiceConfig &config);
+
+  private:
+    Result initializeBluetoothStack();
+
+  private:
+    struct Impl;
+    Impl *m_impl{nullptr};
+};
+
+} // namespace dsx

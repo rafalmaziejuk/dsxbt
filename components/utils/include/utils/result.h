@@ -26,8 +26,8 @@
 #define DSX_RESULT_SUCCESS() \
     dsx::resultSuccess()
 
-#define DSX_CHECK_RESULT(result) \
-    dsx::checkResult((result))
+#define DSX_RESULT_CHECK(result) \
+    dsx::resultCheck((result))
 
 namespace dsx {
 
@@ -92,14 +92,14 @@ inline Result resultSuccess() {
     };
 }
 
-inline void checkResult(const Result &result) {
+inline void resultCheck(const Result &result) {
     if (!result) {
         log(LogSeverity::k_error, result.tag, result.message);
         ESP_ERROR_CHECK(result);
     }
 }
 
-inline void checkResult(esp_err_t error) {
+inline void resultCheck(esp_err_t error) {
     ESP_ERROR_CHECK(error);
 }
 
