@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <bluetooth/bluetooth_service.h>
+#include "bluetooth_gap.h"
 
+#include <bluetooth/bluetooth_service.h>
 #include <utils/log.h>
 
 #include <esp_bt_main.h>
@@ -23,7 +24,10 @@ DSX_LOG_TAG(BluetoothService);
 namespace dsx {
 
 struct BluetoothService::Impl {
+    Result initializeBluetoothStack();
+
     BluetoothServiceConfig config{};
+    bool isInitialized{false};
 };
 
 BluetoothService::BluetoothService()
@@ -35,19 +39,43 @@ BluetoothService::~BluetoothService() {
 }
 
 Result BluetoothService::initialize(const BluetoothServiceConfig &config) {
-    m_impl->config = config;
+    assert(!m_impl->isInitialized);
 
-    auto result = initializeBluetoothStack();
+    m_impl->config = config;
+    auto result = m_impl->initializeBluetoothStack();
     if (result != ESP_OK) {
         return result;
     }
 
+    result = BluetoothGap::initialize(config.gapConfig, config.eventCallback);
+    if (result != ESP_OK) {
+        return result;
+    }
+
+    m_impl->isInitialized = true;
+
+    DSX_LOGI("bluetooth service initialized");
+
     return DSX_RESULT_SUCCESS();
 }
 
-Result BluetoothService::initializeBluetoothStack() {
-    const auto &config = m_impl->config;
+Result BluetoothService::startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount) {
+    if (!m_impl->isInitialized) {
+        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
+    }
 
+    return BluetoothGap::startDiscovery(mode, duration, responsesCount);
+}
+
+Result BluetoothService::stopDiscovery() {
+    if (!m_impl->isInitialized) {
+        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
+    }
+
+    return BluetoothGap::stopDiscovery();
+}
+
+Result BluetoothService::Impl::initializeBluetoothStack() {
     esp_bt_controller_config_t bluetoothConfig = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     esp_err_t error = esp_bt_controller_init(&bluetoothConfig);
     if (error != ESP_OK) {

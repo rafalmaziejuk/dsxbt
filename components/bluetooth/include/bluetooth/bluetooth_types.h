@@ -14,24 +14,27 @@
 
 #pragma once
 
-#include <bluetooth/bluetooth_types.h>
-#include <utils/result.h>
+#include <bluetooth/events/bluetooth_event.h>
+
+#include <esp_bt.h>
+#include <esp_bt_defs.h>
+#include <esp_gap_bt_api.h>
+
+#include <string>
 
 namespace dsx {
 
-class BluetoothService final {
-  public:
-    BluetoothService();
-    ~BluetoothService();
+struct BluetoothGapConfig {
+    std::optional<std::string> deviceName;
+    esp_bt_connection_mode_t connectionMode;
+    esp_bt_discovery_mode_t discoveryMode;
+};
 
-    [[nodiscard]] Result initialize(const BluetoothServiceConfig &config);
+struct BluetoothServiceConfig {
+    esp_bt_mode_t mode;
+    BluetoothGapConfig gapConfig;
 
-    [[nodiscard]] Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration = 10u, uint8_t responsesCount = 0u);
-    [[nodiscard]] Result stopDiscovery();
-
-  private:
-    struct Impl;
-    Impl *m_impl{nullptr};
+    BluetoothEventCallback eventCallback;
 };
 
 } // namespace dsx

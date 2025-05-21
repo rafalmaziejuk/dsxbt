@@ -1,0 +1,101 @@
+// Copyright 2025 Rafal Maziejuk
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "bluetooth_gap.h"
+
+#include <bluetooth/bluetooth_types.h>
+#include <utils/log.h>
+
+DSX_LOG_TAG(BluetoothGap);
+
+namespace dsx {
+
+namespace {
+
+BluetoothEventCallback s_eventCallback;
+
+void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
+void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param);
+
+} // namespace
+
+Result BluetoothGap::initialize(const BluetoothGapConfig &config, BluetoothEventCallback eventCallback) {
+    assert(!s_eventCallback);
+
+    esp_err_t error{ESP_FAIL};
+    if (config.deviceName) {
+        const auto &deviceName = *config.deviceName;
+        error = esp_bt_gap_set_device_name(deviceName.c_str());
+        if (error != ESP_OK) {
+            return DSX_RESULT_ERROR(error, "set device name failed");
+        }
+    }
+
+    error = esp_bt_gap_set_scan_mode(config.connectionMode, config.discoveryMode);
+    if (error != ESP_OK) {
+        return DSX_RESULT_ERROR(error, "set scan mode failed");
+    }
+
+    error = esp_bt_gap_register_callback(callback);
+    if (error != ESP_OK) {
+        return DSX_RESULT_ERROR(error, "register callback failed");
+    }
+
+    s_eventCallback = eventCallback;
+
+    DSX_LOGI("bluetooth gap initialized");
+
+    return DSX_RESULT_SUCCESS();
+}
+
+Result BluetoothGap::startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount) {
+    esp_err_t error = esp_bt_gap_start_discovery(mode, duration, responsesCount);
+    if (error != ESP_OK) {
+        return DSX_RESULT_ERROR(error, "start discovery failed");
+    }
+
+    return DSX_RESULT_SUCCESS();
+}
+
+Result BluetoothGap::stopDiscovery() {
+    esp_err_t error = esp_bt_gap_cancel_discovery();
+    if (error != ESP_OK) {
+        return DSX_RESULT_ERROR(error, "stop discovery failed");
+    }
+
+    return DSX_RESULT_SUCCESS();
+}
+
+namespace {
+
+void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
+    switch (event) {
+    case ESP_BT_GAP_DISC_RES_EVT:
+        handleDeviceDiscoveryEvent(param);
+        break;
+
+    default:
+        DSX_LOGW("bluetooth gap unhandled event: {}", static_cast<uint32_t>(event));
+        break;
+    }
+}
+
+void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
+    BluetoothEvent event{BluetoothDeviceDiscoveredEvent{}};
+    s_eventCallback(event);
+}
+
+} // namespace
+
+} // namespace dsx

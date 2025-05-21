@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "application/application.h"
+#include "application.h"
 
+#include <bluetooth/events/bluetooth_event.h>
+#include <utils/log.h>
 #include <utils/result.h>
 
 #include <nvs.h>
@@ -21,6 +23,8 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+
+DSX_LOG_TAG(Application);
 
 namespace dsx {
 
@@ -34,6 +38,13 @@ Application::Application() {
 
     BluetoothServiceConfig bluetoothServiceConfig{
         .mode = ESP_BT_MODE_CLASSIC_BT,
+        .gapConfig = BluetoothGapConfig{
+            .connectionMode = ESP_BT_CONNECTABLE,
+            .discoveryMode = ESP_BT_NON_DISCOVERABLE,
+        },
+        .eventCallback = [this](BluetoothEvent &event) {
+            onBluetoothEvent(event);
+        },
     };
     DSX_RESULT_CHECK(m_bluetoothService.initialize(bluetoothServiceConfig));
 }
@@ -41,8 +52,16 @@ Application::Application() {
 Application::~Application() {}
 
 void Application::run() {
+    DSX_RESULT_CHECK(m_bluetoothService.startDiscovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY));
+
     while (true) {
         vTaskDelay(10000 / portTICK_PERIOD_MS);
+    }
+}
+
+void Application::onBluetoothEvent(BluetoothEvent &bluetoothEvent) {
+    if (const auto event = bluetoothEvent.get<BluetoothDeviceDiscoveredEvent>()) {
+        DSX_LOGI("device discovered");
     }
 }
 

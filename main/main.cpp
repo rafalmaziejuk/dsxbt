@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "application/application.h"
+#include "application.h"
 
 extern "C" void app_main() {
     dsx::Application application{};
