@@ -16,8 +16,6 @@
 
 #include <bluetooth/events/bluetooth_gap_event.h>
 
-#include <functional>
-#include <optional>
 #include <variant>
 
 namespace dsx {
@@ -39,12 +37,10 @@ class BluetoothEvent {
     }
 
   private:
-    using EventDataType = std::variant<BluetoothDiscoveryStateChangedEvent,
-                                       BluetoothDeviceDiscoveredEvent>;
+    using EventDataType = std::variant<BluetoothDeviceDiscoveredEvent,
+                                       BluetoothDiscoveryStateChangedEvent>;
 
     EventDataType m_data;
 };
-
-using BluetoothEventCallback = std::function<void(BluetoothEvent &event)>;
 
 } // namespace dsx

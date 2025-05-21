@@ -14,15 +14,18 @@
 
 #pragma once
 
-#include <bluetooth/events/bluetooth_event.h>
-
 #include <esp_bt.h>
 #include <esp_bt_defs.h>
 #include <esp_gap_bt_api.h>
 
+#include <functional>
+#include <optional>
 #include <string>
 
 namespace dsx {
+
+class BluetoothEvent;
+using BluetoothEventCallback = std::function<void(BluetoothEvent &event)>;
 
 struct BluetoothGapConfig {
     std::optional<std::string> deviceName;
@@ -35,6 +38,11 @@ struct BluetoothServiceConfig {
     BluetoothGapConfig gapConfig;
 
     BluetoothEventCallback eventCallback;
+};
+
+struct BluetoothDeviceEirData {
+    std::string shortLocalName;
+    std::string completeLocalName;
 };
 
 } // namespace dsx

@@ -13,9 +13,14 @@
 // limitations under the License.
 
 #include "bluetooth_gap.h"
+#include "bluetooth_utils.h"
 
+#include <bluetooth/events/bluetooth_event.h>
 #include <bluetooth/bluetooth_types.h>
 #include <utils/log.h>
+
+#include <algorithm>
+#include <unordered_set>
 
 DSX_LOG_TAG(BluetoothGap);
 
@@ -26,8 +31,8 @@ namespace {
 BluetoothEventCallback s_eventCallback;
 
 void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
-void handleDiscoveryStateChangedEvent(esp_bt_gap_cb_param_t *param);
 void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param);
+void handleDiscoveryStateChangedEvent(esp_bt_gap_cb_param_t *param);
 
 } // namespace
 
@@ -82,12 +87,12 @@ namespace {
 
 void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
     switch (event) {
-    case ESP_BT_GAP_DISC_STATE_CHANGED_EVT:
-        handleDiscoveryStateChangedEvent(param);
-        break;
-
     case ESP_BT_GAP_DISC_RES_EVT:
         handleDeviceDiscoveryEvent(param);
+        break;
+
+    case ESP_BT_GAP_DISC_STATE_CHANGED_EVT:
+        handleDiscoveryStateChangedEvent(param);
         break;
 
     default:
@@ -96,15 +101,65 @@ void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
     }
 }
 
+void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
+    static std::unordered_set<std::string> s_discoveredDeviceAddresses;
+
+    auto bluetoothDeviceAddress = parseBluetoothDeviceAddress(param->disc_res.bda);
+    if (s_discoveredDeviceAddresses.contains(bluetoothDeviceAddress)) {
+        return;
+    }
+    s_discoveredDeviceAddresses.insert(bluetoothDeviceAddress);
+
+    BluetoothDeviceDiscoveredEvent deviceDiscoveredEvent{};
+    for (uint32_t i = 0u; i < param->disc_res.num_prop; i++) {
+        const auto &property = *(param->disc_res.prop + i);
+        switch (property.type) {
+        case ESP_BT_GAP_DEV_PROP_BDNAME:
+            if (property.val) {
+                deviceDiscoveredEvent.name = parseBluetoothDeviceName(
+                    static_cast<uint8_t *>(property.val),
+                    static_cast<uint8_t>(property.len));
+            }
+            break;
+
+        case ESP_BT_GAP_DEV_PROP_COD:
+            deviceDiscoveredEvent.cod = *static_cast<uint32_t *>(property.val);
+            break;
+
+        case ESP_BT_GAP_DEV_PROP_RSSI:
+            deviceDiscoveredEvent.rssi = *static_cast<int8_t *>(property.val);
+            break;
+
+        case ESP_BT_GAP_DEV_PROP_EIR:
+            if (property.val) {
+                deviceDiscoveredEvent.eir = parseBluetoothDeviceEirData(
+                    static_cast<uint8_t *>(property.val));
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    if (!esp_bt_gap_is_valid_cod(deviceDiscoveredEvent.cod)) {
+        DSX_LOGW("invalid COD: 0x{:08X}", deviceDiscoveredEvent.cod);
+        return;
+    }
+
+    std::copy(param->disc_res.bda,
+              param->disc_res.bda + ESP_BD_ADDR_LEN,
+              deviceDiscoveredEvent.address);
+    deviceDiscoveredEvent.addressStr = bluetoothDeviceAddress;
+
+    BluetoothEvent event{deviceDiscoveredEvent};
+    s_eventCallback(event);
+}
+
 void handleDiscoveryStateChangedEvent(esp_bt_gap_cb_param_t *param) {
     BluetoothEvent event{BluetoothDiscoveryStateChangedEvent{
         .state = param->disc_st_chg.state,
     }};
-    s_eventCallback(event);
-}
-
-void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
-    BluetoothEvent event{BluetoothDeviceDiscoveredEvent{}};
     s_eventCallback(event);
 }
 
