@@ -1,7 +1,7 @@
 idf_component_register(
     SRCS
     "main.cpp"
-    "application/application.cpp"
+    "application.cpp"
 
     INCLUDE_DIRS 
     "."

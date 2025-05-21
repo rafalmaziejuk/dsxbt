@@ -14,24 +14,24 @@
 
 #pragma once
 
-#include <bluetooth/bluetooth_types.h>
-#include <utils/result.h>
+#include <bluetooth/bluetooth_service.h>
 
 namespace dsx {
 
-class BluetoothService final {
+class BluetoothEvent;
+
+class Application final {
   public:
-    BluetoothService();
-    ~BluetoothService();
+    Application();
+    ~Application();
 
-    [[nodiscard]] Result initialize(const BluetoothServiceConfig &config);
-
-    [[nodiscard]] Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration = 10u, uint8_t responsesCount = 0u);
-    [[nodiscard]] Result stopDiscovery();
+    void run();
 
   private:
-    struct Impl;
-    Impl *m_impl{nullptr};
+    void onBluetoothEvent(BluetoothEvent &event);
+
+  private:
+    BluetoothService m_bluetoothService{};
 };
 
 } // namespace dsx

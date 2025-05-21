@@ -14,24 +14,8 @@
 
 #pragma once
 
-#include <bluetooth/bluetooth_types.h>
-#include <utils/result.h>
-
 namespace dsx {
 
-class BluetoothService final {
-  public:
-    BluetoothService();
-    ~BluetoothService();
-
-    [[nodiscard]] Result initialize(const BluetoothServiceConfig &config);
-
-    [[nodiscard]] Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration = 10u, uint8_t responsesCount = 0u);
-    [[nodiscard]] Result stopDiscovery();
-
-  private:
-    struct Impl;
-    Impl *m_impl{nullptr};
-};
+struct BluetoothDeviceDiscoveredEvent {};
 
 } // namespace dsx

@@ -14,19 +14,34 @@
 
 #pragma once
 
-#include <bluetooth/bluetooth_service.h>
+#include <bluetooth/events/bluetooth_gap_event.h>
+
+#include <functional>
+#include <optional>
+#include <variant>
 
 namespace dsx {
 
-class Application final {
+class BluetoothEvent {
   public:
-    Application();
-    ~Application();
+    template <typename EventType>
+    BluetoothEvent(const EventType &eventType) {
+        m_data = eventType;
+    }
 
-    void run();
+    template <typename EventType>
+    [[nodiscard]] std::optional<EventType> get() const {
+        if (std::holds_alternative<EventType>(m_data)) {
+            return *std::get_if<EventType>(&m_data);
+        }
+
+        return std::nullopt;
+    }
 
   private:
-    BluetoothService m_bluetoothService{};
+    std::variant<BluetoothDeviceDiscoveredEvent> m_data;
 };
+
+using BluetoothEventCallback = std::function<void(BluetoothEvent &event)>;
 
 } // namespace dsx
