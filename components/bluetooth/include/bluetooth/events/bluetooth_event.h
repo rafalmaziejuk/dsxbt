@@ -39,7 +39,10 @@ class BluetoothEvent {
     }
 
   private:
-    std::variant<BluetoothDeviceDiscoveredEvent> m_data;
+    using EventDataType = std::variant<BluetoothDiscoveryStateChangedEvent,
+                                       BluetoothDeviceDiscoveredEvent>;
+
+    EventDataType m_data;
 };
 
 using BluetoothEventCallback = std::function<void(BluetoothEvent &event)>;

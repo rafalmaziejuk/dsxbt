@@ -26,6 +26,7 @@ namespace {
 BluetoothEventCallback s_eventCallback;
 
 void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param);
+void handleDiscoveryStateChangedEvent(esp_bt_gap_cb_param_t *param);
 void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param);
 
 } // namespace
@@ -81,6 +82,10 @@ namespace {
 
 void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
     switch (event) {
+    case ESP_BT_GAP_DISC_STATE_CHANGED_EVT:
+        handleDiscoveryStateChangedEvent(param);
+        break;
+
     case ESP_BT_GAP_DISC_RES_EVT:
         handleDeviceDiscoveryEvent(param);
         break;
@@ -89,6 +94,13 @@ void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
         DSX_LOGW("bluetooth gap unhandled event: {}", static_cast<uint32_t>(event));
         break;
     }
+}
+
+void handleDiscoveryStateChangedEvent(esp_bt_gap_cb_param_t *param) {
+    BluetoothEvent event{BluetoothDiscoveryStateChangedEvent{
+        .state = param->disc_st_chg.state,
+    }};
+    s_eventCallback(event);
 }
 
 void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {

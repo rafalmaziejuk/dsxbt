@@ -60,6 +60,14 @@ void Application::run() {
 }
 
 void Application::onBluetoothEvent(BluetoothEvent &bluetoothEvent) {
+    if (const auto event = bluetoothEvent.get<BluetoothDiscoveryStateChangedEvent>()) {
+        if (event->state == ESP_BT_GAP_DISCOVERY_STARTED) {
+            DSX_LOGI("bluetooth discovery started");
+        } else if (event->state == ESP_BT_GAP_DISCOVERY_STOPPED) {
+            DSX_LOGI("bluetooth discovery stopped");
+        }
+    }
+
     if (const auto event = bluetoothEvent.get<BluetoothDeviceDiscoveredEvent>()) {
         DSX_LOGI("device discovered");
     }
