@@ -14,7 +14,13 @@
 
 #pragma once
 
+#include <esp_gap_bt_api.h>
+
 namespace dsx {
+
+struct BluetoothDiscoveryStateChangedEvent {
+    esp_bt_gap_discovery_state_t state;
+};
 
 struct BluetoothDeviceDiscoveredEvent {};
 
