@@ -16,17 +16,10 @@
 
 #include <bluetooth/bluetooth_types.h>
 
-#include <esp_gap_bt_api.h>
-
 namespace dsx {
 
 struct BluetoothDeviceDiscoveredEvent {
-    std::string name;
-    std::string addressStr;
-    esp_bd_addr_t address;
-    uint32_t cod;
-    int32_t rssi;
-    BluetoothDeviceEirData eir;
+    BluetoothDeviceConfig config;
 };
 
 struct BluetoothDiscoveryStateChangedEvent {

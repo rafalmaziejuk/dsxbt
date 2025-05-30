@@ -9,5 +9,4 @@ idf_component_register(
     REQUIRES
     bluetooth
     nvs_flash
-    utils
 )

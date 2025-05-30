@@ -1,5 +1,6 @@
 idf_component_register(
     SRCS
+    "src/bluetooth_device.cpp"
     "src/bluetooth_gap.cpp"
     "src/bluetooth_service.cpp"
     "src/bluetooth_utils.cpp"

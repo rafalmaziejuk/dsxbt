@@ -14,11 +14,15 @@
 
 #pragma once
 
+#include <bluetooth/bluetooth_device.h>
 #include <bluetooth/bluetooth_service.h>
+
+#include <optional>
 
 namespace dsx {
 
 class BluetoothEvent;
+class BluetoothDeviceDiscoveredEvent;
 
 class Application final {
   public:
@@ -29,9 +33,11 @@ class Application final {
 
   private:
     void onBluetoothEvent(BluetoothEvent &event);
+    void onBluetoothDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event);
 
   private:
     BluetoothService m_bluetoothService{};
+    std::optional<BluetoothDevice> m_bluetoothDevice{};
 };
 
 } // namespace dsx

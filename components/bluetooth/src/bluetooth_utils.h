@@ -27,4 +27,6 @@ namespace dsx {
 
 [[nodiscard]] BluetoothDeviceEirData parseBluetoothDeviceEirData(uint8_t *property);
 
+[[nodiscard]] std::string parseBluetoothDeviceRemoteService(const esp_bt_uuid_t *uuid);
+
 } // namespace dsx

@@ -61,11 +61,7 @@ void Application::run() {
 
 void Application::onBluetoothEvent(BluetoothEvent &bluetoothEvent) {
     if (const auto event = bluetoothEvent.get<BluetoothDeviceDiscoveredEvent>()) {
-        DSX_LOGI("\taddress: {}", event->addressStr);
-        DSX_LOGI("\tshort local name: {}", event->eir.shortLocalName);
-        DSX_LOGI("\tcomplete local name: {}", event->eir.completeLocalName);
-        DSX_LOGI("\tcod: 0x{:08X}", event->cod);
-        DSX_LOGI("\trssi: {}", event->rssi);
+        onBluetoothDeviceDiscoveredEvent(*event);
     }
 
     if (const auto event = bluetoothEvent.get<BluetoothDiscoveryStateChangedEvent>()) {
@@ -73,6 +69,33 @@ void Application::onBluetoothEvent(BluetoothEvent &bluetoothEvent) {
             DSX_LOGI("bluetooth discovery started");
         } else if (event->state == ESP_BT_GAP_DISCOVERY_STOPPED) {
             DSX_LOGI("bluetooth discovery stopped");
+        }
+    }
+}
+
+void Application::onBluetoothDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event) {
+    BluetoothDevice device{event.config};
+    uint32_t serviceClass = device.getServiceClass();
+    uint32_t majorDeviceClass = device.getMajorDeviceClass();
+    uint32_t minorDeviceClass = device.getMinorDeviceClass();
+
+    auto found = true;
+    found &= (serviceClass == ESP_BT_COD_SRVC_LMTD_DISCOVER);
+    found &= (majorDeviceClass == ESP_BT_COD_MAJOR_DEV_PERIPHERAL);
+    found &= (minorDeviceClass == ESP_BT_COD_MINOR_PERIPHERAL_GAMEPAD);
+
+    if (found) {
+        DSX_LOGI("successfully discovered device");
+        DSX_LOGI("\tname: {}", device.getName());
+        DSX_LOGI("\tshort local name: {}", device.getShortLocalName());
+        DSX_LOGI("\tcomplete local name: {}", device.getCompleteLocalName());
+        DSX_LOGI("\taddress: {}", device.getAddressStr());
+        DSX_LOGI("\tcod: 0x{:04X}", device.getClassOfDevice());
+        DSX_LOGI("\trssi: {}", device.getRssi());
+
+        if (!m_bluetoothDevice) {
+            m_bluetoothDevice = device;
+            DSX_RESULT_CHECK(m_bluetoothService.stopDiscovery());
         }
     }
 }
