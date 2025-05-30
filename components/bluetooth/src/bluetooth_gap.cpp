@@ -110,29 +110,29 @@ void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
     }
     s_discoveredDeviceAddresses.insert(bluetoothDeviceAddress);
 
-    BluetoothDeviceDiscoveredEvent deviceDiscoveredEvent{};
+    BluetoothDeviceConfig config;
     for (uint32_t i = 0u; i < param->disc_res.num_prop; i++) {
         const auto &property = *(param->disc_res.prop + i);
         switch (property.type) {
         case ESP_BT_GAP_DEV_PROP_BDNAME:
             if (property.val) {
-                deviceDiscoveredEvent.name = parseBluetoothDeviceName(
+                config.name = parseBluetoothDeviceName(
                     static_cast<uint8_t *>(property.val),
                     static_cast<uint8_t>(property.len));
             }
             break;
 
         case ESP_BT_GAP_DEV_PROP_COD:
-            deviceDiscoveredEvent.cod = *static_cast<uint32_t *>(property.val);
+            config.cod = *static_cast<uint32_t *>(property.val);
             break;
 
         case ESP_BT_GAP_DEV_PROP_RSSI:
-            deviceDiscoveredEvent.rssi = *static_cast<int8_t *>(property.val);
+            config.rssi = *static_cast<int8_t *>(property.val);
             break;
 
         case ESP_BT_GAP_DEV_PROP_EIR:
             if (property.val) {
-                deviceDiscoveredEvent.eir = parseBluetoothDeviceEirData(
+                config.eir = parseBluetoothDeviceEirData(
                     static_cast<uint8_t *>(property.val));
             }
             break;
@@ -142,17 +142,18 @@ void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
         }
     }
 
-    if (!esp_bt_gap_is_valid_cod(deviceDiscoveredEvent.cod)) {
-        DSX_LOGW("invalid COD: 0x{:08X}", deviceDiscoveredEvent.cod);
+    if (!esp_bt_gap_is_valid_cod(config.cod)) {
+        DSX_LOGW("invalid COD: 0x{:04X}", config.cod);
         return;
     }
 
     std::copy(param->disc_res.bda,
               param->disc_res.bda + ESP_BD_ADDR_LEN,
-              deviceDiscoveredEvent.address);
-    deviceDiscoveredEvent.addressStr = bluetoothDeviceAddress;
+              config.address);
 
-    BluetoothEvent event{deviceDiscoveredEvent};
+    BluetoothEvent event{BluetoothDeviceDiscoveredEvent{
+        .config = config,
+    }};
     s_eventCallback(event);
 }
 

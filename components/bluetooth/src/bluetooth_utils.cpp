@@ -14,8 +14,6 @@
 
 #include "bluetooth_utils.h"
 
-#include <esp_gap_bt_api.h>
-
 #include <format>
 
 namespace dsx {
@@ -51,6 +49,30 @@ BluetoothDeviceEirData parseBluetoothDeviceEirData(uint8_t *property) {
     }
 
     return eirData;
+}
+
+std::string parseBluetoothDeviceRemoteService(const esp_bt_uuid_t *uuid) {
+    std::string result = "";
+    if (uuid == nullptr) {
+        return result;
+    }
+
+    if (uuid->len == 2u) {
+        constexpr std::string_view k_format = "{:04X}";
+        result = std::format(k_format, uuid->uuid.uuid16);
+    } else if (uuid->len == 4u) {
+        constexpr std::string_view k_format = "{:08X}";
+        result = std::format(k_format, uuid->uuid.uuid32);
+    } else if (uuid->len == 16u) {
+        constexpr std::string_view k_format = "{:02X}{:02X}{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}";
+        const auto *p = uuid->uuid.uuid128;
+        result = std::format(
+            k_format,
+            p[15], p[14], p[13], p[12], p[11], p[10], p[9], p[8],
+            p[7], p[6], p[5], p[4], p[3], p[2], p[1], p[0]);
+    }
+
+    return result;
 }
 
 } // namespace dsx

@@ -21,6 +21,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace dsx {
 
@@ -43,6 +44,15 @@ struct BluetoothServiceConfig {
 struct BluetoothDeviceEirData {
     std::string shortLocalName;
     std::string completeLocalName;
+};
+
+struct BluetoothDeviceConfig {
+    std::string name;
+    esp_bd_addr_t address;
+    uint32_t cod;
+    int32_t rssi;
+    BluetoothDeviceEirData eir;
+    std::vector<esp_bt_uuid_t> remoteServices;
 };
 
 } // namespace dsx
