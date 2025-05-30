@@ -75,6 +75,22 @@ Result BluetoothService::stopDiscovery() {
     return BluetoothGap::stopDiscovery();
 }
 
+Result BluetoothService::startRemoteServicesDiscovery(const BluetoothDevice &device) {
+    if (!m_impl->isInitialized) {
+        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
+    }
+
+    return BluetoothGap::startRemoteServicesDiscovery(device);
+}
+
+Result BluetoothService::startRemoteServiceRecordDiscovery(const BluetoothDevice &device, esp_bt_uuid_t uuid) {
+    if (!m_impl->isInitialized) {
+        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
+    }
+
+    return BluetoothGap::startRemoteServiceRecordDiscovery(device, uuid);
+}
+
 Result BluetoothService::Impl::initializeBluetoothStack() {
     esp_bt_controller_config_t bluetoothConfig = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     esp_err_t error = esp_bt_controller_init(&bluetoothConfig);

@@ -38,7 +38,9 @@ class BluetoothEvent {
 
   private:
     using EventDataType = std::variant<BluetoothDeviceDiscoveredEvent,
-                                       BluetoothDiscoveryStateChangedEvent>;
+                                       BluetoothDiscoveryStateChangedEvent,
+                                       BluetoothRemoteServicesDiscoveredEvent,
+                                       BluetoothRemoteServiceRecordDiscoveredEvent>;
 
     EventDataType m_data;
 };

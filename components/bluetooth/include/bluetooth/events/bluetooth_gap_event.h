@@ -26,4 +26,12 @@ struct BluetoothDiscoveryStateChangedEvent {
     esp_bt_gap_discovery_state_t state;
 };
 
+struct BluetoothRemoteServicesDiscoveredEvent {
+    std::vector<esp_bt_uuid_t> remoteServices;
+};
+
+struct BluetoothRemoteServiceRecordDiscoveredEvent {
+    bool discovered;
+};
+
 } // namespace dsx

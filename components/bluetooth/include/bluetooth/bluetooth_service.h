@@ -19,6 +19,8 @@
 
 namespace dsx {
 
+class BluetoothDevice;
+
 class BluetoothService final {
   public:
     BluetoothService();
@@ -28,6 +30,9 @@ class BluetoothService final {
 
     [[nodiscard]] Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration = 10u, uint8_t responsesCount = 0u);
     [[nodiscard]] Result stopDiscovery();
+
+    [[nodiscard]] Result startRemoteServicesDiscovery(const BluetoothDevice &device);
+    [[nodiscard]] Result startRemoteServiceRecordDiscovery(const BluetoothDevice &device, esp_bt_uuid_t uuid);
 
   private:
     struct Impl;
