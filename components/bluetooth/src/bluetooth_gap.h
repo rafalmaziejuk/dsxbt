@@ -19,12 +19,17 @@
 
 namespace dsx {
 
+class BluetoothDevice;
+
 class BluetoothGap final {
   public:
     [[nodiscard]] static Result initialize(const BluetoothGapConfig &config, BluetoothEventCallback eventCallback);
 
     static Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount);
     static Result stopDiscovery();
+
+    static Result startRemoteServicesDiscovery(const BluetoothDevice &device);
+    static Result startRemoteServiceRecordDiscovery(const BluetoothDevice &device, esp_bt_uuid_t uuid);
 };
 
 } // namespace dsx

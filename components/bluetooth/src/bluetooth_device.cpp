@@ -48,7 +48,7 @@ std::string BluetoothDevice::getAddressStr() const {
     return parseBluetoothDeviceAddress(m_impl->config.address);
 }
 
-esp_bd_addr_t &BluetoothDevice::getAddress() {
+esp_bd_addr_t &BluetoothDevice::getAddress() const {
     return m_impl->config.address;
 }
 
@@ -70,24 +70,6 @@ uint32_t BluetoothDevice::getServiceClass() const {
 
 int32_t BluetoothDevice::getRssi() const {
     return m_impl->config.rssi;
-}
-
-std::vector<std::string> BluetoothDevice::getRemoteServicesStr() const {
-    std::vector<std::string> remoteServices(m_impl->config.remoteServices.size());
-    for (uint32_t i = 0u; i < m_impl->config.remoteServices.size(); i++) {
-        auto uuid = m_impl->config.remoteServices[i];
-        remoteServices[i] = parseBluetoothDeviceRemoteService(&uuid);
-    }
-
-    return remoteServices;
-}
-
-std::vector<esp_bt_uuid_t> &BluetoothDevice::getRemoteServices() const {
-    return m_impl->config.remoteServices;
-}
-
-void BluetoothDevice::setRemoteServicesRaw(const std::vector<esp_bt_uuid_t> &services) {
-    m_impl->config.remoteServices = services;
 }
 
 } // namespace dsx

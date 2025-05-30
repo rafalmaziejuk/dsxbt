@@ -28,15 +28,12 @@ class BluetoothDevice final {
     std::string getShortLocalName() const;
     std::string getCompleteLocalName() const;
     std::string getAddressStr() const;
-    esp_bd_addr_t &getAddress();
+    esp_bd_addr_t &getAddress() const;
     uint32_t getClassOfDevice() const;
     uint32_t getMajorDeviceClass() const;
     uint32_t getMinorDeviceClass() const;
     uint32_t getServiceClass() const;
     int32_t getRssi() const;
-    std::vector<std::string> getRemoteServicesStr() const;
-    std::vector<esp_bt_uuid_t> &getRemoteServices() const;
-    void setRemoteServicesRaw(const std::vector<esp_bt_uuid_t> &services);
 
   private:
     struct Impl;

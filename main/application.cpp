@@ -71,6 +71,10 @@ void Application::onBluetoothEvent(BluetoothEvent &bluetoothEvent) {
             DSX_LOGI("bluetooth discovery stopped");
         }
     }
+
+    if (const auto event = bluetoothEvent.get<BluetoothRemoteServiceRecordDiscoveredEvent>()) {
+        onRemoteServiceRecordDiscoveredCallback(*event);
+    }
 }
 
 void Application::onBluetoothDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event) {
@@ -90,13 +94,30 @@ void Application::onBluetoothDeviceDiscoveredEvent(const BluetoothDeviceDiscover
         DSX_LOGI("\tshort local name: {}", device.getShortLocalName());
         DSX_LOGI("\tcomplete local name: {}", device.getCompleteLocalName());
         DSX_LOGI("\taddress: {}", device.getAddressStr());
-        DSX_LOGI("\tcod: 0x{:04X}", device.getClassOfDevice());
+        DSX_LOGI("\tcod: 0x{:08X}", device.getClassOfDevice());
         DSX_LOGI("\trssi: {}", device.getRssi());
 
         if (!m_bluetoothDevice) {
             m_bluetoothDevice = device;
             DSX_RESULT_CHECK(m_bluetoothService.stopDiscovery());
+
+            DSX_LOGI("discovering bluetooth device HID remote service");
+            esp_bt_uuid_t uuid{
+                .len = ESP_UUID_LEN_16,
+                .uuid = {
+                    .uuid16 = 0x1124u,
+                },
+            };
+            DSX_RESULT_CHECK(m_bluetoothService.startRemoteServiceRecordDiscovery(device, uuid));
         }
+    }
+}
+
+void Application::onRemoteServiceRecordDiscoveredCallback(const BluetoothRemoteServiceRecordDiscoveredEvent &event) {
+    if (event.discovered) {
+        DSX_LOGI("successfully discovered remote service");
+    } else {
+        DSX_LOGW("unable to discover remote service");
     }
 }
 
