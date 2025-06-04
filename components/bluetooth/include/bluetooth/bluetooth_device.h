@@ -22,22 +22,23 @@ namespace dsx {
 class BluetoothDevice final {
   public:
     explicit BluetoothDevice(const BluetoothDeviceConfig &config);
-    ~BluetoothDevice();
 
     std::string getName() const;
     std::string getShortLocalName() const;
     std::string getCompleteLocalName() const;
+
+    uint8_t *getAddress() const;
     std::string getAddressStr() const;
-    esp_bd_addr_t &getAddress() const;
+
     uint32_t getClassOfDevice() const;
     uint32_t getMajorDeviceClass() const;
     uint32_t getMinorDeviceClass() const;
     uint32_t getServiceClass() const;
+
     int32_t getRssi() const;
 
   private:
-    struct Impl;
-    Impl *m_impl{nullptr};
+    BluetoothDeviceConfig m_config{};
 };
 
 } // namespace dsx

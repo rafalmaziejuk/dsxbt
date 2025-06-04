@@ -17,59 +17,47 @@
 #include <bluetooth/bluetooth_device.h>
 
 namespace dsx {
-
-struct BluetoothDevice::Impl {
-    BluetoothDeviceConfig config{};
-};
-
 BluetoothDevice::BluetoothDevice(const BluetoothDeviceConfig &config)
-    : m_impl{new Impl{}} {
-    m_impl->config = config;
-}
-
-BluetoothDevice::~BluetoothDevice() {
-    delete m_impl;
-    m_impl = nullptr;
-}
+    : m_config{config} {}
 
 std::string BluetoothDevice::getName() const {
-    return m_impl->config.name;
+    return m_config.name;
 }
 
 std::string BluetoothDevice::getShortLocalName() const {
-    return m_impl->config.eir.shortLocalName;
+    return m_config.eir.shortLocalName;
 }
 
 std::string BluetoothDevice::getCompleteLocalName() const {
-    return m_impl->config.eir.completeLocalName;
+    return m_config.eir.completeLocalName;
+}
+
+uint8_t *BluetoothDevice::getAddress() const {
+    return const_cast<uint8_t *>(m_config.address);
 }
 
 std::string BluetoothDevice::getAddressStr() const {
-    return parseBluetoothDeviceAddress(m_impl->config.address);
-}
-
-esp_bd_addr_t &BluetoothDevice::getAddress() const {
-    return m_impl->config.address;
+    return parseBluetoothDeviceAddress(m_config.address);
 }
 
 uint32_t BluetoothDevice::getClassOfDevice() const {
-    return m_impl->config.cod;
+    return m_config.cod;
 }
 
 uint32_t BluetoothDevice::getMajorDeviceClass() const {
-    return esp_bt_gap_get_cod_major_dev(m_impl->config.cod);
+    return esp_bt_gap_get_cod_major_dev(m_config.cod);
 }
 
 uint32_t BluetoothDevice::getMinorDeviceClass() const {
-    return esp_bt_gap_get_cod_minor_dev(m_impl->config.cod);
+    return esp_bt_gap_get_cod_minor_dev(m_config.cod);
 }
 
 uint32_t BluetoothDevice::getServiceClass() const {
-    return esp_bt_gap_get_cod_srvc(m_impl->config.cod);
+    return esp_bt_gap_get_cod_srvc(m_config.cod);
 }
 
 int32_t BluetoothDevice::getRssi() const {
-    return m_impl->config.rssi;
+    return m_config.rssi;
 }
 
 } // namespace dsx

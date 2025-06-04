@@ -17,7 +17,9 @@
 #include <esp_bt.h>
 #include <esp_bt_defs.h>
 #include <esp_gap_bt_api.h>
+#include <esp_hidh.h>
 
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <string>
@@ -52,7 +54,6 @@ struct BluetoothDeviceConfig {
     uint32_t cod;
     int32_t rssi;
     BluetoothDeviceEirData eir;
-    std::vector<esp_bt_uuid_t> remoteServices;
 };
 
 } // namespace dsx
