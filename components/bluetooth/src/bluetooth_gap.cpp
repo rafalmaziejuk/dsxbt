@@ -99,7 +99,6 @@ Result BluetoothGap::startRemoteServiceRecordDiscovery(const BluetoothDevice &de
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start remote service record discovery failed");
     }
-    DSX_LOGI("lOGG3");
 
     return DSX_RESULT_SUCCESS();
 }

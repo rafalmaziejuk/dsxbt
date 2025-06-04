@@ -14,7 +14,9 @@
 
 #include "application.h"
 
+#include <memory>
+
 extern "C" void app_main() {
-    dsx::Application application{};
-    application.run();
+    auto application = std::make_unique<dsx::Application>();
+    application->run();
 }

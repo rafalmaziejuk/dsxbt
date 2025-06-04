@@ -23,11 +23,10 @@ class BluetoothDevice;
 
 class BluetoothService final {
   public:
-    BluetoothService();
     ~BluetoothService();
 
     [[nodiscard]] Result initialize(const BluetoothServiceConfig &config);
-    [[nodiscard]] Result initializeHidHost();
+    [[nodiscard]] Result initializeHidHost(const BluetoothHidHostConfig &config);
 
     [[nodiscard]] Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration = 10u, uint8_t responsesCount = 0u);
     [[nodiscard]] Result stopDiscovery();
@@ -38,8 +37,11 @@ class BluetoothService final {
     [[nodiscard]] Result openHidDeviceConnection(const BluetoothDevice &device, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType);
 
   private:
-    struct Impl;
-    Impl *m_impl{nullptr};
+    Result initializeBluetoothStack(const BluetoothServiceConfig &config);
+
+  private:
+    bool m_isInitialized{false};
+    bool m_isHidHostInitialized{false};
 };
 
 } // namespace dsx

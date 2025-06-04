@@ -43,6 +43,10 @@ struct BluetoothServiceConfig {
     BluetoothEventCallback eventCallback;
 };
 
+struct BluetoothHidHostConfig {
+    BluetoothEventCallback eventCallback;
+};
+
 struct BluetoothDeviceEirData {
     std::string shortLocalName;
     std::string completeLocalName;
