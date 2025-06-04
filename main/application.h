@@ -29,7 +29,6 @@ struct BluetoothHidDeviceOpenEvent;
 class Application final {
   public:
     Application();
-    ~Application();
 
     void run();
 

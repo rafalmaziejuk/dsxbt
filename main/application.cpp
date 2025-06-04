@@ -47,10 +47,12 @@ Application::Application() {
         },
     };
     DSX_RESULT_CHECK(m_bluetoothService.initialize(bluetoothServiceConfig));
-    DSX_RESULT_CHECK(m_bluetoothService.initializeHidHost());
-}
 
-Application::~Application() {}
+    BluetoothHidHostConfig bluetoothHidHostConfig{
+        .eventCallback = bluetoothServiceConfig.eventCallback,
+    };
+    DSX_RESULT_CHECK(m_bluetoothService.initializeHidHost(bluetoothHidHostConfig));
+}
 
 void Application::run() {
     DSX_RESULT_CHECK(m_bluetoothService.startDiscovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY));
