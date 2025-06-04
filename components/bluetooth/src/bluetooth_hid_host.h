@@ -15,15 +15,18 @@
 #pragma once
 
 #include <bluetooth/bluetooth_types.h>
+#include <utils/result.h>
 
 namespace dsx {
 
-[[nodiscard]] std::string parseBluetoothDeviceAddress(const uint8_t *data);
+class BluetoothDevice;
 
-[[nodiscard]] std::string parseBluetoothDeviceName(const uint8_t *data, uint8_t length);
+class BluetoothHidHost final {
+  public:
+    static Result initialize(BluetoothEventCallback eventCallback);
+    static Result deinitialize();
 
-[[nodiscard]] BluetoothDeviceEirData parseBluetoothDeviceEirData(uint8_t *property);
-
-[[nodiscard]] std::string parseBluetoothDeviceRemoteService(const esp_bt_uuid_t *uuid);
+    static Result openHidDeviceConnection(const BluetoothDevice &device, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType);
+};
 
 } // namespace dsx

@@ -24,6 +24,7 @@ namespace dsx {
 class BluetoothEvent;
 struct BluetoothDeviceDiscoveredEvent;
 struct BluetoothRemoteServiceRecordDiscoveredEvent;
+struct BluetoothHidDeviceOpenEvent;
 
 class Application final {
   public:
@@ -35,7 +36,8 @@ class Application final {
   private:
     void onBluetoothEvent(BluetoothEvent &event);
     void onBluetoothDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event);
-    void onRemoteServiceRecordDiscoveredCallback(const BluetoothRemoteServiceRecordDiscoveredEvent &event);
+    void onRemoteServiceRecordDiscoveredEvent(const BluetoothRemoteServiceRecordDiscoveredEvent &event);
+    void onBluetoothHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event);
 
   private:
     BluetoothService m_bluetoothService{};

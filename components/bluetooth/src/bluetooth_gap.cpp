@@ -16,7 +16,6 @@
 #include "bluetooth_utils.h"
 
 #include <bluetooth/bluetooth_device.h>
-#include <bluetooth/bluetooth_types.h>
 #include <bluetooth/events/bluetooth_event.h>
 #include <utils/log.h>
 
@@ -100,6 +99,7 @@ Result BluetoothGap::startRemoteServiceRecordDiscovery(const BluetoothDevice &de
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start remote service record discovery failed");
     }
+    DSX_LOGI("lOGG3");
 
     return DSX_RESULT_SUCCESS();
 }

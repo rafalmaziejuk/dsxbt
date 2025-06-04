@@ -2,6 +2,7 @@ idf_component_register(
     SRCS
     "src/bluetooth_device.cpp"
     "src/bluetooth_gap.cpp"
+    "src/bluetooth_hid_host.cpp"
     "src/bluetooth_service.cpp"
     "src/bluetooth_utils.cpp"
     
@@ -11,5 +12,6 @@ idf_component_register(
 
     REQUIRES
     bt
+    esp_hid
     utils
 )

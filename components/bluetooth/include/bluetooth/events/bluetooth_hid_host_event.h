@@ -18,12 +18,9 @@
 
 namespace dsx {
 
-[[nodiscard]] std::string parseBluetoothDeviceAddress(const uint8_t *data);
-
-[[nodiscard]] std::string parseBluetoothDeviceName(const uint8_t *data, uint8_t length);
-
-[[nodiscard]] BluetoothDeviceEirData parseBluetoothDeviceEirData(uint8_t *property);
-
-[[nodiscard]] std::string parseBluetoothDeviceRemoteService(const esp_bt_uuid_t *uuid);
+struct BluetoothHidDeviceOpenEvent {
+    esp_hidh_dev_t *deviceData;
+    esp_err_t status;
+};
 
 } // namespace dsx

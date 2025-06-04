@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "bluetooth_gap.h"
+#include "bluetooth_hid_host.h"
 
 #include <bluetooth/bluetooth_service.h>
 #include <utils/log.h>
@@ -28,6 +29,7 @@ struct BluetoothService::Impl {
 
     BluetoothServiceConfig config{};
     bool isInitialized{false};
+    bool isHidHostInitialized{false};
 };
 
 BluetoothService::BluetoothService()
@@ -55,6 +57,19 @@ Result BluetoothService::initialize(const BluetoothServiceConfig &config) {
     m_impl->isInitialized = true;
 
     DSX_LOGI("bluetooth service initialized");
+
+    return DSX_RESULT_SUCCESS();
+}
+
+Result BluetoothService::initializeHidHost() {
+    if (!m_impl->isHidHostInitialized) {
+        auto result = BluetoothHidHost::initialize(m_impl->config.eventCallback);
+        if (result != ESP_OK) {
+            return result;
+        }
+
+        m_impl->isHidHostInitialized = true;
+    }
 
     return DSX_RESULT_SUCCESS();
 }
@@ -89,6 +104,14 @@ Result BluetoothService::startRemoteServiceRecordDiscovery(const BluetoothDevice
     }
 
     return BluetoothGap::startRemoteServiceRecordDiscovery(device, uuid);
+}
+
+Result BluetoothService::openHidDeviceConnection(const BluetoothDevice &device, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType) {
+    if (!m_impl->isHidHostInitialized) {
+        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth hid host not initialized");
+    }
+
+    return BluetoothHidHost::openHidDeviceConnection(device, transport, bleAddressType);
 }
 
 Result BluetoothService::Impl::initializeBluetoothStack() {

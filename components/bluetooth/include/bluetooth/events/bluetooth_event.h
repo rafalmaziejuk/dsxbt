@@ -15,6 +15,7 @@
 #pragma once
 
 #include <bluetooth/events/bluetooth_gap_event.h>
+#include <bluetooth/events/bluetooth_hid_host_event.h>
 
 #include <variant>
 
@@ -40,7 +41,8 @@ class BluetoothEvent {
     using EventDataType = std::variant<BluetoothDeviceDiscoveredEvent,
                                        BluetoothDiscoveryStateChangedEvent,
                                        BluetoothRemoteServicesDiscoveredEvent,
-                                       BluetoothRemoteServiceRecordDiscoveredEvent>;
+                                       BluetoothRemoteServiceRecordDiscoveredEvent,
+                                       BluetoothHidDeviceOpenEvent>;
 
     EventDataType m_data;
 };
