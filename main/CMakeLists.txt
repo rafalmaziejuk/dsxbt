@@ -1,7 +1,7 @@
 idf_component_register(
     SRCS
+    "ds4.cpp"
     "main.cpp"
-    "application.cpp"
 
     INCLUDE_DIRS 
     "."

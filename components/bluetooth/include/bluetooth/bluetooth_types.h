@@ -19,6 +19,7 @@
 #include <esp_gap_bt_api.h>
 #include <esp_hidh.h>
 
+#include <array>
 #include <cstdint>
 #include <functional>
 #include <optional>
@@ -29,6 +30,7 @@ namespace dsx {
 
 class BluetoothEvent;
 using BluetoothEventCallback = std::function<void(BluetoothEvent &event)>;
+using BluetoothDeviceAddress = std::array<uint8_t, ESP_BD_ADDR_LEN>;
 
 struct BluetoothGapConfig {
     std::optional<std::string> deviceName;
@@ -36,7 +38,7 @@ struct BluetoothGapConfig {
     esp_bt_discovery_mode_t discoveryMode;
 };
 
-struct BluetoothServiceConfig {
+struct BluetoothManagerConfig {
     esp_bt_mode_t mode;
     BluetoothGapConfig gapConfig;
 
@@ -52,10 +54,14 @@ struct BluetoothDeviceEirData {
     std::string completeLocalName;
 };
 
-struct BluetoothDeviceConfig {
+struct BluetoothDeviceDiscoveryData {
     std::string name;
-    esp_bd_addr_t address;
+    std::string addressStr;
+    BluetoothDeviceAddress address;
     uint32_t cod;
+    uint32_t majorDeviceClass;
+    uint32_t minorDeviceClass;
+    uint32_t serviceClass;
     int32_t rssi;
     BluetoothDeviceEirData eir;
 };

@@ -85,8 +85,8 @@ Result BluetoothGap::stopDiscovery() {
     return DSX_RESULT_SUCCESS();
 }
 
-Result BluetoothGap::startRemoteServicesDiscovery(const BluetoothDevice &device) {
-    esp_err_t error = esp_bt_gap_get_remote_services(device.getAddress());
+Result BluetoothGap::startRemoteServicesDiscovery(BluetoothDeviceAddress &address) {
+    esp_err_t error = esp_bt_gap_get_remote_services(address.data());
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start remote services discovery failed");
     }
@@ -94,8 +94,8 @@ Result BluetoothGap::startRemoteServicesDiscovery(const BluetoothDevice &device)
     return DSX_RESULT_SUCCESS();
 }
 
-Result BluetoothGap::startRemoteServiceRecordDiscovery(const BluetoothDevice &device, esp_bt_uuid_t uuid) {
-    esp_err_t error = esp_bt_gap_get_remote_service_record(device.getAddress(), &uuid);
+Result BluetoothGap::startRemoteServiceRecordDiscovery(BluetoothDeviceAddress &address, esp_bt_uuid_t uuid) {
+    esp_err_t error = esp_bt_gap_get_remote_service_record(address.data(), &uuid);
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start remote service record discovery failed");
     }
@@ -138,29 +138,29 @@ void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
     }
     s_discoveredDeviceAddresses.insert(bluetoothDeviceAddress);
 
-    BluetoothDeviceConfig config;
+    BluetoothDeviceDiscoveryData data;
     for (uint32_t i = 0u; i < param->disc_res.num_prop; i++) {
         const auto &property = *(param->disc_res.prop + i);
         switch (property.type) {
         case ESP_BT_GAP_DEV_PROP_BDNAME:
             if (property.val) {
-                config.name = parseBluetoothDeviceName(
+                data.name = parseBluetoothDeviceName(
                     static_cast<uint8_t *>(property.val),
                     static_cast<uint8_t>(property.len));
             }
             break;
 
         case ESP_BT_GAP_DEV_PROP_COD:
-            config.cod = *static_cast<uint32_t *>(property.val);
+            data.cod = *static_cast<uint32_t *>(property.val);
             break;
 
         case ESP_BT_GAP_DEV_PROP_RSSI:
-            config.rssi = *static_cast<int8_t *>(property.val);
+            data.rssi = *static_cast<int8_t *>(property.val);
             break;
 
         case ESP_BT_GAP_DEV_PROP_EIR:
             if (property.val) {
-                config.eir = parseBluetoothDeviceEirData(
+                data.eir = parseBluetoothDeviceEirData(
                     static_cast<uint8_t *>(property.val));
             }
             break;
@@ -170,17 +170,21 @@ void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
         }
     }
 
-    if (!esp_bt_gap_is_valid_cod(config.cod)) {
-        DSX_LOGW("invalid COD: 0x{:08X}", config.cod);
+    if (!esp_bt_gap_is_valid_cod(data.cod)) {
+        DSX_LOGW("invalid COD: 0x{:08X}", data.cod);
         return;
     }
 
     std::copy(param->disc_res.bda,
               param->disc_res.bda + ESP_BD_ADDR_LEN,
-              config.address);
+              data.address.begin());
+    data.addressStr = bluetoothDeviceAddress;
+    data.majorDeviceClass = esp_bt_gap_get_cod_major_dev(data.cod);
+    data.minorDeviceClass = esp_bt_gap_get_cod_minor_dev(data.cod);
+    data.serviceClass = esp_bt_gap_get_cod_srvc(data.cod);
 
     BluetoothEvent event{BluetoothDeviceDiscoveredEvent{
-        .config = config,
+        .data = data,
     }};
     s_eventCallback(event);
 }

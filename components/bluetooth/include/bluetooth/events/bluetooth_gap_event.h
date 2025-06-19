@@ -19,7 +19,7 @@
 namespace dsx {
 
 struct BluetoothDeviceDiscoveredEvent {
-    BluetoothDeviceConfig config;
+    BluetoothDeviceDiscoveryData data;
 };
 
 struct BluetoothDiscoveryStateChangedEvent {

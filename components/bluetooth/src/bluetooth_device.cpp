@@ -17,47 +17,12 @@
 #include <bluetooth/bluetooth_device.h>
 
 namespace dsx {
-BluetoothDevice::BluetoothDevice(const BluetoothDeviceConfig &config)
-    : m_config{config} {}
 
-std::string BluetoothDevice::getName() const {
-    return m_config.name;
-}
+BluetoothDevice::BluetoothDevice(BluetoothManager &bluetoothManager)
+    : m_rBluetoothManager{bluetoothManager} {}
 
-std::string BluetoothDevice::getShortLocalName() const {
-    return m_config.eir.shortLocalName;
-}
-
-std::string BluetoothDevice::getCompleteLocalName() const {
-    return m_config.eir.completeLocalName;
-}
-
-uint8_t *BluetoothDevice::getAddress() const {
-    return const_cast<uint8_t *>(m_config.address);
-}
-
-std::string BluetoothDevice::getAddressStr() const {
-    return parseBluetoothDeviceAddress(m_config.address);
-}
-
-uint32_t BluetoothDevice::getClassOfDevice() const {
-    return m_config.cod;
-}
-
-uint32_t BluetoothDevice::getMajorDeviceClass() const {
-    return esp_bt_gap_get_cod_major_dev(m_config.cod);
-}
-
-uint32_t BluetoothDevice::getMinorDeviceClass() const {
-    return esp_bt_gap_get_cod_minor_dev(m_config.cod);
-}
-
-uint32_t BluetoothDevice::getServiceClass() const {
-    return esp_bt_gap_get_cod_srvc(m_config.cod);
-}
-
-int32_t BluetoothDevice::getRssi() const {
-    return m_config.rssi;
+BluetoothDeviceState BluetoothDevice::getState() const {
+    return m_state;
 }
 
 } // namespace dsx

@@ -15,32 +15,23 @@
 #pragma once
 
 #include <bluetooth/bluetooth_device.h>
-#include <bluetooth/bluetooth_service.h>
-
-#include <optional>
 
 namespace dsx {
 
-class BluetoothEvent;
 struct BluetoothDeviceDiscoveredEvent;
 struct BluetoothRemoteServiceRecordDiscoveredEvent;
 struct BluetoothHidDeviceOpenEvent;
 
-class Application final {
+class DualShock4 : public BluetoothDevice {
   public:
-    Application();
-
-    void run();
+    explicit DualShock4(BluetoothManager &bluetoothManager);
+    ~DualShock4() override;
 
   private:
-    void onBluetoothEvent(BluetoothEvent &event);
-    void onBluetoothDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event);
+    void onEvent(BluetoothEvent &bluetoothEvent) override;
+    void onDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event);
     void onRemoteServiceRecordDiscoveredEvent(const BluetoothRemoteServiceRecordDiscoveredEvent &event);
-    void onBluetoothHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event);
-
-  private:
-    BluetoothService m_bluetoothService{};
-    std::optional<BluetoothDevice> m_bluetoothDevice{};
+    void onHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event);
 };
 
 } // namespace dsx
