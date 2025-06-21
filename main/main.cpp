@@ -12,11 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "application.h"
+#include "ds4.h"
 
-#include <memory>
+#include <bluetooth/bluetooth_manager.h>
+
+using namespace dsx;
+
+DSX_LOG_TAG(Main);
 
 extern "C" void app_main() {
-    auto application = std::make_unique<dsx::Application>();
-    application->run();
+    BluetoothManager bluetoothManager{};
+    DualShock4 controller{bluetoothManager};
+
+    while (true) {
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+    }
 }

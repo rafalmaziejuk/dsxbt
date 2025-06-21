@@ -14,31 +14,38 @@
 
 #pragma once
 
-#include <bluetooth/bluetooth_types.h>
-#include <utils/result.h>
+#include <bluetooth/bluetooth_manager.h>
+
+#include <array>
 
 namespace dsx {
 
-class BluetoothDevice final {
+enum class BluetoothDeviceState : uint8_t {
+    k_unknown,
+    k_discovered,
+    k_connected
+};
+
+class BluetoothDevice {
   public:
-    explicit BluetoothDevice(const BluetoothDeviceConfig &config);
+    BluetoothDevice(const BluetoothDevice &) = delete;
+    BluetoothDevice &operator=(const BluetoothDevice &) = delete;
+    BluetoothDevice(BluetoothDevice &&) = delete;
+    BluetoothDevice &operator=(BluetoothDevice &&) = delete;
+    virtual ~BluetoothDevice() = default;
 
-    std::string getName() const;
-    std::string getShortLocalName() const;
-    std::string getCompleteLocalName() const;
+    [[nodiscard]] BluetoothDeviceState getState() const;
 
-    uint8_t *getAddress() const;
-    std::string getAddressStr() const;
+  protected:
+    explicit BluetoothDevice(BluetoothManager &bluetoothManager);
 
-    uint32_t getClassOfDevice() const;
-    uint32_t getMajorDeviceClass() const;
-    uint32_t getMinorDeviceClass() const;
-    uint32_t getServiceClass() const;
+    virtual void onEvent(BluetoothEvent &bluetoothEvent) = 0;
 
-    int32_t getRssi() const;
+  protected:
+    BluetoothDeviceState m_state{BluetoothDeviceState::k_unknown};
+    std::array<uint8_t, ESP_BD_ADDR_LEN> m_address{};
 
-  private:
-    BluetoothDeviceConfig m_config{};
+    BluetoothManager &m_rBluetoothManager;
 };
 
 } // namespace dsx

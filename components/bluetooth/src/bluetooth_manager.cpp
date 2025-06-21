@@ -15,22 +15,22 @@
 #include "bluetooth_gap.h"
 #include "bluetooth_hid_host.h"
 
-#include <bluetooth/bluetooth_service.h>
+#include <bluetooth/bluetooth_manager.h>
 #include <utils/log.h>
 
 #include <esp_bt_main.h>
 
-DSX_LOG_TAG(BluetoothService);
+DSX_LOG_TAG(BluetoothManager);
 
 namespace dsx {
 
-BluetoothService::~BluetoothService() {
+BluetoothManager::~BluetoothManager() {
     if (m_isHidHostInitialized) {
         DSX_RESULT_CHECK(BluetoothHidHost::deinitialize());
     }
 }
 
-Result BluetoothService::initialize(const BluetoothServiceConfig &config) {
+Result BluetoothManager::initialize(const BluetoothManagerConfig &config) {
     if (!m_isInitialized) {
         auto result = initializeBluetoothStack(config);
         if (result != ESP_OK) {
@@ -44,16 +44,14 @@ Result BluetoothService::initialize(const BluetoothServiceConfig &config) {
 
         m_isInitialized = true;
 
-        DSX_LOGI("bluetooth service initialized");
+        DSX_LOGI("bluetooth manager initialized");
     }
 
     return DSX_RESULT_SUCCESS();
 }
 
-Result BluetoothService::initializeHidHost(const BluetoothHidHostConfig &config) {
-    if (!m_isInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
-    }
+Result BluetoothManager::initializeHidHost(const BluetoothHidHostConfig &config) {
+    assert(m_isInitialized);
 
     if (!m_isHidHostInitialized) {
         auto result = BluetoothHidHost::initialize(config.eventCallback);
@@ -67,50 +65,49 @@ Result BluetoothService::initializeHidHost(const BluetoothHidHostConfig &config)
     return DSX_RESULT_SUCCESS();
 }
 
-Result BluetoothService::startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount) {
-    if (!m_isInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
-    }
+Result BluetoothManager::startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount) {
+    assert(m_isInitialized);
 
     return BluetoothGap::startDiscovery(mode, duration, responsesCount);
 }
 
-Result BluetoothService::stopDiscovery() {
-    if (!m_isInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
-    }
+Result BluetoothManager::stopDiscovery() {
+    assert(m_isInitialized);
 
     return BluetoothGap::stopDiscovery();
 }
 
-Result BluetoothService::startRemoteServicesDiscovery(const BluetoothDevice &device) {
-    if (!m_isInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
-    }
+Result BluetoothManager::startRemoteServicesDiscovery(BluetoothDeviceAddress &address) {
+    assert(m_isInitialized);
 
-    return BluetoothGap::startRemoteServicesDiscovery(device);
+    return BluetoothGap::startRemoteServicesDiscovery(address);
 }
 
-Result BluetoothService::startRemoteServiceRecordDiscovery(const BluetoothDevice &device, esp_bt_uuid_t uuid) {
-    if (!m_isInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
-    }
+Result BluetoothManager::startRemoteServiceRecordDiscovery(BluetoothDeviceAddress &address, esp_bt_uuid_t uuid) {
+    assert(m_isInitialized);
 
-    return BluetoothGap::startRemoteServiceRecordDiscovery(device, uuid);
+    return BluetoothGap::startRemoteServiceRecordDiscovery(address, uuid);
 }
 
-Result BluetoothService::openHidDeviceConnection(const BluetoothDevice &device, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType) {
-    if (!m_isInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth service is not initialized");
-    }
-    if (!m_isHidHostInitialized) {
-        return DSX_RESULT_ERROR(ESP_FAIL, "bluetooth hid host not initialized");
-    }
+Result BluetoothManager::openHidDeviceConnection(BluetoothDeviceAddress &address, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType) {
+    assert(m_isInitialized && m_isHidHostInitialized);
 
-    return BluetoothHidHost::openHidDeviceConnection(device, transport, bleAddressType);
+    return BluetoothHidHost::openHidDeviceConnection(address, transport, bleAddressType);
 }
 
-Result BluetoothService::initializeBluetoothStack(const BluetoothServiceConfig &config) {
+Result BluetoothManager::getHidDeviceFeatureReport(esp_hidh_dev_t *deviceData, size_t reportMapIndex, size_t reportId, size_t size, uint8_t *buffer, size_t *sizeOut) {
+    assert(m_isInitialized && m_isHidHostInitialized);
+
+    return BluetoothHidHost::getHidDeviceFeatureReport(deviceData, reportMapIndex, reportId, size, buffer, sizeOut);
+}
+
+Result BluetoothManager::getHidDeviceBluetoothAddress(esp_hidh_dev_t *deviceData, BluetoothDeviceAddress &addressOut) {
+    assert(m_isInitialized && m_isHidHostInitialized);
+
+    return BluetoothHidHost::getHidDeviceBluetoothAddress(deviceData, addressOut);
+}
+
+Result BluetoothManager::initializeBluetoothStack(const BluetoothManagerConfig &config) {
     esp_bt_controller_config_t bluetoothConfig = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     esp_err_t error = esp_bt_controller_init(&bluetoothConfig);
     if (error != ESP_OK) {

@@ -28,6 +28,9 @@ BluetoothEventCallback s_eventCallback;
 
 void callback(void *arg, esp_event_base_t eventBase, int32_t id, void *eventData);
 void handleHidDeviceOpenEvent(esp_hidh_event_data_t *param);
+void handleHidDeviceInputReportEvent(esp_hidh_event_data_t *param);
+void handleHidDeviceFeatureReportEvent(esp_hidh_event_data_t *param);
+void handleHidDeviceCloseEvent(esp_hidh_event_data_t *param);
 
 } // namespace
 
@@ -61,10 +64,30 @@ Result BluetoothHidHost::deinitialize() {
     return DSX_RESULT_SUCCESS();
 }
 
-Result BluetoothHidHost::openHidDeviceConnection(const BluetoothDevice &device, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType) {
-    if (esp_hidh_dev_open(device.getAddress(), transport, bleAddressType) == nullptr) {
+Result BluetoothHidHost::openHidDeviceConnection(BluetoothDeviceAddress &address, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType) {
+    if (esp_hidh_dev_open(address.data(), transport, bleAddressType) == nullptr) {
         return DSX_RESULT_ERROR(ESP_FAIL, "unable to open hid host device");
     }
+
+    return DSX_RESULT_SUCCESS();
+}
+
+Result BluetoothHidHost::getHidDeviceFeatureReport(esp_hidh_dev_t *deviceData, size_t reportMapIndex, size_t reportId, size_t size, uint8_t *buffer, size_t *sizeOut) {
+    esp_err_t error = esp_hidh_dev_feature_get(deviceData, reportMapIndex, reportId, size, buffer, sizeOut);
+    if (error != ESP_OK) {
+        return DSX_RESULT_ERROR(error, "unable to send hid host device ");
+    }
+
+    return DSX_RESULT_SUCCESS();
+}
+
+Result BluetoothHidHost::getHidDeviceBluetoothAddress(esp_hidh_dev_t *deviceData, BluetoothDeviceAddress &addressOut) {
+    const auto *address = esp_hidh_dev_bda_get(deviceData);
+    if (address == nullptr) {
+        return DSX_RESULT_ERROR(ESP_FAIL, "unable to get hid host device bluetooth address");
+    }
+
+    std::copy(address, address + ESP_BD_ADDR_LEN, addressOut.data());
 
     return DSX_RESULT_SUCCESS();
 }
@@ -80,6 +103,18 @@ void callback(void *arg, esp_event_base_t eventBase, int32_t id, void *eventData
         handleHidDeviceOpenEvent(param);
         break;
 
+    case ESP_HIDH_INPUT_EVENT:
+        handleHidDeviceInputReportEvent(param);
+        break;
+
+    case ESP_HIDH_FEATURE_EVENT:
+        handleHidDeviceFeatureReportEvent(param);
+        break;
+
+    case ESP_HIDH_CLOSE_EVENT:
+        handleHidDeviceCloseEvent(param);
+        break;
+
     default:
         DSX_LOGW("bluetooth hid host unhandled event: {}", id);
         break;
@@ -92,6 +127,17 @@ void handleHidDeviceOpenEvent(esp_hidh_event_data_t *param) {
         .status = param->open.status,
     }};
     s_eventCallback(event);
+}
+
+void handleHidDeviceInputReportEvent(esp_hidh_event_data_t *param) {
+    // DSX_LOGI("size= {}, data[0]=0x{:02X}", param->input.length, param->input.data[0]);
+}
+
+void handleHidDeviceFeatureReportEvent(esp_hidh_event_data_t *param) {
+}
+
+void handleHidDeviceCloseEvent(esp_hidh_event_data_t *param) {
+    DSX_LOGI("HID device closed");
 }
 
 } // namespace

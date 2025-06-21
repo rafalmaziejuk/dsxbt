@@ -28,8 +28,8 @@ class BluetoothGap final {
     static Result startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount);
     static Result stopDiscovery();
 
-    static Result startRemoteServicesDiscovery(const BluetoothDevice &device);
-    static Result startRemoteServiceRecordDiscovery(const BluetoothDevice &device, esp_bt_uuid_t uuid);
+    static Result startRemoteServicesDiscovery(BluetoothDeviceAddress &address);
+    static Result startRemoteServiceRecordDiscovery(BluetoothDeviceAddress &address, esp_bt_uuid_t uuid);
 };
 
 } // namespace dsx
