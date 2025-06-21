@@ -63,9 +63,9 @@ void DualShock4::onEvent(BluetoothEvent &bluetoothEvent) {
 
     if (const auto event = bluetoothEvent.get<BluetoothDiscoveryStateChangedEvent>()) {
         if (event->state == ESP_BT_GAP_DISCOVERY_STARTED) {
-            DSX_LOGI("bluetooth discovery started");
+            DSX_LOGI("bluetooth device discovery started");
         } else if (event->state == ESP_BT_GAP_DISCOVERY_STOPPED) {
-            DSX_LOGI("bluetooth discovery stopped");
+            DSX_LOGI("bluetooth device discovery stopped");
         }
     }
 
@@ -84,55 +84,45 @@ void DualShock4::onDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &e
     found &= (event.data.majorDeviceClass == ESP_BT_COD_MAJOR_DEV_PERIPHERAL);
     found &= (event.data.minorDeviceClass == ESP_BT_COD_MINOR_PERIPHERAL_GAMEPAD);
 
-    if (found) {
-        if (m_state == BluetoothDeviceState::k_unknown) {
-            DSX_RESULT_CHECK(m_rBluetoothManager.stopDiscovery());
-            m_state = BluetoothDeviceState::k_discovered;
+    if (found && (m_state == BluetoothDeviceState::k_unknown)) {
+        DSX_RESULT_CHECK(m_rBluetoothManager.stopDiscovery());
+        DSX_LOGI("bluetooth device discovered: {}", event.data.addressStr);
 
-            DSX_LOGI("successfully discovered device");
-            DSX_LOGI("\tname: {}", event.data.name);
-            DSX_LOGI("\tshort local name: {}", event.data.eir.shortLocalName);
-            DSX_LOGI("\tcomplete local name: {}", event.data.eir.completeLocalName);
-            DSX_LOGI("\taddress: {}", event.data.addressStr);
-            DSX_LOGI("\tcod: 0x{:08X}", event.data.cod);
-            DSX_LOGI("\trssi: {}", event.data.rssi);
+        m_state = BluetoothDeviceState::k_discovered;
+        m_address = event.data.address;
 
-            m_address = event.data.address;
-
-            DSX_LOGI("discovering bluetooth device HID remote service");
-            esp_bt_uuid_t uuid{
-                .len = ESP_UUID_LEN_16,
-                .uuid = {
-                    .uuid16 = 0x1124u,
-                },
-            };
-            DSX_RESULT_CHECK(m_rBluetoothManager.startRemoteServiceRecordDiscovery(m_address, uuid));
-        }
+        esp_bt_uuid_t uuid{
+            .len = ESP_UUID_LEN_16,
+            .uuid = {
+                .uuid16 = 0x1124u,
+            },
+        };
+        DSX_RESULT_CHECK(m_rBluetoothManager.startRemoteServiceRecordDiscovery(m_address, uuid));
     }
 }
 
 void DualShock4::onRemoteServiceRecordDiscoveredEvent(const BluetoothRemoteServiceRecordDiscoveredEvent &event) {
     if (event.discovered) {
-        DSX_LOGI("successfully discovered remote service");
+        DSX_LOGI("dualshock 4 controller discovered successfully");
 
-        DSX_LOGI("opening HID device connection:");
+        DSX_LOGI("opening connection with dualshock 4 controller");
         DSX_RESULT_CHECK(m_rBluetoothManager.openHidDeviceConnection(m_address, ESP_HID_TRANSPORT_BT, BLE_ADDR_TYPE_PUBLIC));
     } else {
-        DSX_LOGW("unable to discover remote service");
+        DSX_LOGE("unable to discover remote hid service for discovered device");
         m_state = BluetoothDeviceState::k_unknown;
     }
 }
 
 void DualShock4::onHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event) {
     if (event.status == ESP_OK) {
-        DSX_LOGI("successfully opened HID device connection");
+        DSX_LOGI("connection with dualshock 4 controller opened successfully");
 
         if (m_state != BluetoothDeviceState::k_discovered) {
             DSX_RESULT_CHECK(m_rBluetoothManager.getHidDeviceBluetoothAddress(event.deviceData, m_address));
         }
         m_state = BluetoothDeviceState::k_connected;
     } else {
-        DSX_LOGE("unable to open HID device connection");
+        DSX_LOGE("unable to open connection with dualshock 4 controller");
         m_state = BluetoothDeviceState::k_unknown;
     }
 }

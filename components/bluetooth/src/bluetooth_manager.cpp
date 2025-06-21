@@ -44,7 +44,7 @@ Result BluetoothManager::initialize(const BluetoothManagerConfig &config) {
 
         m_isInitialized = true;
 
-        DSX_LOGI("bluetooth manager initialized");
+        DSX_LOGD("bluetooth manager initialized");
     }
 
     return DSX_RESULT_SUCCESS();
@@ -130,7 +130,7 @@ Result BluetoothManager::initializeBluetoothStack(const BluetoothManagerConfig &
         return DSX_RESULT_ERROR(error, "enable bluedroid failed");
     }
 
-    DSX_LOGI("bluetooth stack initialized");
+    DSX_LOGD("bluetooth stack initialized");
 
     return DSX_RESULT_SUCCESS();
 }
