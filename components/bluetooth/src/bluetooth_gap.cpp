@@ -39,9 +39,9 @@ void handleGetRemoteServiceRecordEvent(esp_bt_gap_cb_param_t *param);
 } // namespace
 
 Result BluetoothGap::initialize(const BluetoothGapConfig &config, BluetoothEventCallback eventCallback) {
-    assert(!s_eventCallback);
+    assert(!s_eventCallback && "bluetooth gap already initialized");
 
-    esp_err_t error{ESP_FAIL};
+    esp_err_t error = ESP_FAIL;
     if (config.deviceName) {
         const auto &deviceName = *config.deviceName;
         error = esp_bt_gap_set_device_name(deviceName.c_str());
@@ -62,12 +62,14 @@ Result BluetoothGap::initialize(const BluetoothGapConfig &config, BluetoothEvent
 
     s_eventCallback = eventCallback;
 
-    DSX_LOGI("bluetooth gap initialized");
+    DSX_LOGD("bluetooth gap initialized");
 
     return DSX_RESULT_SUCCESS();
 }
 
 Result BluetoothGap::startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, uint8_t responsesCount) {
+    DSX_LOGD("esp_bt_gap_start_discovery called");
+
     esp_err_t error = esp_bt_gap_start_discovery(mode, duration, responsesCount);
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start discovery failed");
@@ -77,6 +79,8 @@ Result BluetoothGap::startDiscovery(esp_bt_inq_mode_t mode, uint8_t duration, ui
 }
 
 Result BluetoothGap::stopDiscovery() {
+    DSX_LOGD("esp_bt_gap_cancel_discovery called");
+
     esp_err_t error = esp_bt_gap_cancel_discovery();
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "stop discovery failed");
@@ -86,6 +90,8 @@ Result BluetoothGap::stopDiscovery() {
 }
 
 Result BluetoothGap::startRemoteServicesDiscovery(BluetoothDeviceAddress &address) {
+    DSX_LOGD("esp_bt_gap_get_remote_services called");
+
     esp_err_t error = esp_bt_gap_get_remote_services(address.data());
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start remote services discovery failed");
@@ -95,6 +101,8 @@ Result BluetoothGap::startRemoteServicesDiscovery(BluetoothDeviceAddress &addres
 }
 
 Result BluetoothGap::startRemoteServiceRecordDiscovery(BluetoothDeviceAddress &address, esp_bt_uuid_t uuid) {
+    DSX_LOGD("esp_bt_gap_get_remote_service_record called");
+
     esp_err_t error = esp_bt_gap_get_remote_service_record(address.data(), &uuid);
     if (error != ESP_OK) {
         return DSX_RESULT_ERROR(error, "start remote service record discovery failed");
@@ -124,7 +132,7 @@ void callback(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param) {
         break;
 
     default:
-        DSX_LOGW("bluetooth gap unhandled event: {}", static_cast<uint32_t>(event));
+        DSX_LOGD("bluetooth gap unhandled event: {}", static_cast<uint32_t>(event));
         break;
     }
 }
@@ -171,7 +179,7 @@ void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
     }
 
     if (!esp_bt_gap_is_valid_cod(data.cod)) {
-        DSX_LOGW("invalid COD: 0x{:08X}", data.cod);
+        DSX_LOGW("invalid bluetooth device ({}) cod: 0x{:08X}", bluetoothDeviceAddress, data.cod);
         return;
     }
 
@@ -182,6 +190,14 @@ void handleDeviceDiscoveryEvent(esp_bt_gap_cb_param_t *param) {
     data.majorDeviceClass = esp_bt_gap_get_cod_major_dev(data.cod);
     data.minorDeviceClass = esp_bt_gap_get_cod_minor_dev(data.cod);
     data.serviceClass = esp_bt_gap_get_cod_srvc(data.cod);
+
+    DSX_LOGD("bluetooth device discovered");
+    DSX_LOGD("\tname: {}", data.name);
+    DSX_LOGD("\tshort local name: {}", data.eir.shortLocalName);
+    DSX_LOGD("\tcomplete local name: {}", data.eir.completeLocalName);
+    DSX_LOGD("\taddress: {}", bluetoothDeviceAddress);
+    DSX_LOGD("\tcod: 0x{:08X}", data.cod);
+    DSX_LOGD("\trssi: {}", data.rssi);
 
     BluetoothEvent event{BluetoothDeviceDiscoveredEvent{
         .data = data,
@@ -211,7 +227,7 @@ void handleGetRemoteServicesEvent(esp_bt_gap_cb_param_t *param) {
         }};
         s_eventCallback(event);
     } else {
-        DSX_LOGW("bluetooth device remote services not found %s", bluetoothDeviceAddress.c_str());
+        DSX_LOGW("unable to find any bluetooth device ({}) remote services %s", bluetoothDeviceAddress);
     }
 }
 
