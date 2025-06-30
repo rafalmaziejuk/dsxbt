@@ -15,7 +15,6 @@
 #include "ds4.h"
 
 #include <bluetooth/events/bluetooth_event.h>
-#include <utils/log.h>
 
 #include <nvs.h>
 #include <nvs_flash.h>
@@ -54,6 +53,15 @@ DualShock4::DualShock4(BluetoothManager &bluetoothManager)
 }
 
 DualShock4::~DualShock4() {
+}
+
+Result DualShock4::discover() const {
+    if (m_state == BluetoothDeviceState::k_unknown) {
+        return m_rBluetoothManager.startDiscovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY);
+    }
+
+    DSX_LOGI("DualShock 4 already discovered/connected");
+    return DSX_RESULT_SUCCESS();
 }
 
 void DualShock4::onEvent(BluetoothEvent &bluetoothEvent) {

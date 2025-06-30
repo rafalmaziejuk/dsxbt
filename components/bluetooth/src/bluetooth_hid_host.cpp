@@ -16,8 +16,6 @@
 
 #include <bluetooth/bluetooth_device.h>
 #include <bluetooth/events/bluetooth_event.h>
-#include <utils/log.h>
-
 DSX_LOG_TAG(BluetoothHidHost);
 
 namespace dsx {

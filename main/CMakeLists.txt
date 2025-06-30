@@ -8,5 +8,6 @@ idf_component_register(
 
     REQUIRES
     bluetooth
+    gpio
     nvs_flash
 )

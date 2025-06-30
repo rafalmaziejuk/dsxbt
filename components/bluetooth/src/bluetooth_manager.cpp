@@ -16,7 +16,6 @@
 #include "bluetooth_hid_host.h"
 
 #include <bluetooth/bluetooth_manager.h>
-#include <utils/log.h>
 
 #include <esp_bt_main.h>
 

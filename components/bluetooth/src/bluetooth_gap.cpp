@@ -17,7 +17,6 @@
 
 #include <bluetooth/bluetooth_device.h>
 #include <bluetooth/events/bluetooth_event.h>
-#include <utils/log.h>
 
 #include <algorithm>
 #include <unordered_set>
