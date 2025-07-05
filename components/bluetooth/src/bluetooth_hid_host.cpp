@@ -142,6 +142,12 @@ void handleHidDeviceFeatureReportEvent(esp_hidh_event_data_t *param) {
 }
 
 void handleHidDeviceCloseEvent(esp_hidh_event_data_t *param) {
+    BluetoothEvent event{BluetoothHidDeviceCloseEvent{
+        .deviceData = param->close.dev,
+        .reason = param->close.reason,
+        .status = param->close.status,
+    }};
+    s_eventCallback(event);
 }
 
 } // namespace

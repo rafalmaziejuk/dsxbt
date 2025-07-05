@@ -42,7 +42,8 @@ class BluetoothEvent {
                                        BluetoothDiscoveryStateChangedEvent,
                                        BluetoothRemoteServicesDiscoveredEvent,
                                        BluetoothRemoteServiceRecordDiscoveredEvent,
-                                       BluetoothHidDeviceOpenEvent>;
+                                       BluetoothHidDeviceOpenEvent,
+                                       BluetoothHidDeviceCloseEvent>;
 
     EventDataType m_data;
 };
