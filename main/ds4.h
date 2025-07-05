@@ -21,6 +21,7 @@ namespace dsx {
 struct BluetoothDeviceDiscoveredEvent;
 struct BluetoothRemoteServiceRecordDiscoveredEvent;
 struct BluetoothHidDeviceOpenEvent;
+struct BluetoothHidDeviceCloseEvent;
 
 class DualShock4 : public BluetoothDevice {
   public:
@@ -34,6 +35,10 @@ class DualShock4 : public BluetoothDevice {
     void onDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event);
     void onRemoteServiceRecordDiscoveredEvent(const BluetoothRemoteServiceRecordDiscoveredEvent &event);
     void onHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event);
+    void onHidDeviceClosedEvent(const BluetoothHidDeviceCloseEvent &event);
+
+  private:
+    bool m_discovering{false};
 };
 
 } // namespace dsx

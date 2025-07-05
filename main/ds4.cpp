@@ -52,15 +52,13 @@ DualShock4::DualShock4(BluetoothManager &bluetoothManager)
     DSX_RESULT_CHECK(bluetoothManager.initializeHidHost(bluetoothHidHostConfig));
 }
 
-DualShock4::~DualShock4() {
-}
+DualShock4::~DualShock4() = default;
 
 Result DualShock4::discover() const {
-    if (m_state == BluetoothDeviceState::k_unknown) {
+    if (!m_discovering && (m_state == BluetoothDeviceState::k_unknown)) {
         return m_rBluetoothManager.startDiscovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY);
     }
 
-    DSX_LOGI("DualShock 4 already discovered/connected");
     return DSX_RESULT_SUCCESS();
 }
 
@@ -71,8 +69,10 @@ void DualShock4::onEvent(BluetoothEvent &bluetoothEvent) {
 
     if (const auto event = bluetoothEvent.get<BluetoothDiscoveryStateChangedEvent>()) {
         if (event->state == ESP_BT_GAP_DISCOVERY_STARTED) {
+            m_discovering = true;
             DSX_LOGI("bluetooth device discovery started");
         } else if (event->state == ESP_BT_GAP_DISCOVERY_STOPPED) {
+            m_discovering = false;
             DSX_LOGI("bluetooth device discovery stopped");
         }
     }
@@ -83,6 +83,10 @@ void DualShock4::onEvent(BluetoothEvent &bluetoothEvent) {
 
     if (const auto event = bluetoothEvent.get<BluetoothHidDeviceOpenEvent>()) {
         onHidDeviceOpenedEvent(*event);
+    }
+
+    if (const auto event = bluetoothEvent.get<BluetoothHidDeviceCloseEvent>()) {
+        onHidDeviceClosedEvent(*event);
     }
 }
 
@@ -132,6 +136,16 @@ void DualShock4::onHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event
     } else {
         DSX_LOGE("unable to open connection with dualshock 4 controller");
         m_state = BluetoothDeviceState::k_unknown;
+    }
+}
+
+void DualShock4::onHidDeviceClosedEvent(const BluetoothHidDeviceCloseEvent &event) {
+    if (event.status == ESP_OK) {
+        DSX_LOGI("connection with dualshock 4 controller closed successfully");
+
+        m_state = BluetoothDeviceState::k_unknown;
+    } else {
+        DSX_LOGE("unable to close connection with dualshock 4 controller");
     }
 }
 
