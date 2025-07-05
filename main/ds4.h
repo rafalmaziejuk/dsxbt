@@ -27,6 +27,8 @@ class DualShock4 : public BluetoothDevice {
     explicit DualShock4(BluetoothManager &bluetoothManager);
     ~DualShock4() override;
 
+    [[nodiscard]] Result discover() const;
+
   private:
     void onEvent(BluetoothEvent &bluetoothEvent) override;
     void onDeviceDiscoveredEvent(const BluetoothDeviceDiscoveredEvent &event);

@@ -14,15 +14,29 @@
 
 #include "ds4.h"
 
-#include <bluetooth/bluetooth_manager.h>
-
-using namespace dsx;
+#include <gpio/gpio_manager.h>
 
 DSX_LOG_TAG(Main);
 
 extern "C" void app_main() {
-    BluetoothManager bluetoothManager{};
-    DualShock4 controller{bluetoothManager};
+    dsx::GpioManager gpioManager{};
+    DSX_RESULT_CHECK(gpioManager.installInterruptService());
+
+    gpio_config_t gpioConfig = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_16),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_NEGEDGE,
+    };
+    DSX_RESULT_CHECK(gpioManager.configureGpio(gpioConfig));
+
+    dsx::BluetoothManager bluetoothManager{};
+    dsx::DualShock4 controller{bluetoothManager};
+
+    DSX_RESULT_CHECK(gpioManager.addInterruptHandler({GPIO_NUM_16}, [&](const gpio_num_t &gpioPin) {
+        DSX_RESULT_CHECK(controller.discover());
+    }));
 
     while (true) {
         vTaskDelay(10000 / portTICK_PERIOD_MS);

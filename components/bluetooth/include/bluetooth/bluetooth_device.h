@@ -16,8 +16,6 @@
 
 #include <bluetooth/bluetooth_manager.h>
 
-#include <array>
-
 namespace dsx {
 
 enum class BluetoothDeviceState : uint8_t {
@@ -28,13 +26,14 @@ enum class BluetoothDeviceState : uint8_t {
 
 class BluetoothDevice {
   public:
+    [[nodiscard]] BluetoothDeviceState getState() const;
+
+  public:
     BluetoothDevice(const BluetoothDevice &) = delete;
     BluetoothDevice &operator=(const BluetoothDevice &) = delete;
     BluetoothDevice(BluetoothDevice &&) = delete;
     BluetoothDevice &operator=(BluetoothDevice &&) = delete;
     virtual ~BluetoothDevice() = default;
-
-    [[nodiscard]] BluetoothDeviceState getState() const;
 
   protected:
     explicit BluetoothDevice(BluetoothManager &bluetoothManager);
@@ -43,7 +42,7 @@ class BluetoothDevice {
 
   protected:
     BluetoothDeviceState m_state{BluetoothDeviceState::k_unknown};
-    std::array<uint8_t, ESP_BD_ADDR_LEN> m_address{};
+    BluetoothDeviceAddress m_address{};
 
     BluetoothManager &m_rBluetoothManager;
 };

@@ -17,9 +17,10 @@
 #include <esp_log.h>
 
 #include <format>
+#include <string_view>
 
 #define DSX_LOG_TAG(tag) \
-    static constexpr std::string_view k_logTag = #tag
+    static inline constexpr std::string_view k_logTag = #tag
 
 #define DSX_LOG_IMPL(verbosity, message, ...) \
     dsx::log(verbosity, k_logTag, message, ##__VA_ARGS__)
