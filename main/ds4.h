@@ -15,6 +15,7 @@
 #pragma once
 
 #include <bluetooth/bluetooth_device.h>
+#include <gpio/gpio_manager.h>
 
 namespace dsx {
 
@@ -25,7 +26,8 @@ struct BluetoothHidDeviceCloseEvent;
 
 class DualShock4 : public BluetoothDevice {
   public:
-    explicit DualShock4(BluetoothManager &bluetoothManager);
+    explicit DualShock4(BluetoothManager &bluetoothManager,
+                        GpioManager &gpioManager);
     ~DualShock4() override;
 
     [[nodiscard]] Result discover() const;
@@ -39,6 +41,7 @@ class DualShock4 : public BluetoothDevice {
 
   private:
     bool m_discovering{false};
+    GpioManager &m_rGpioManager;
 };
 
 } // namespace dsx

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "config.h"
 #include "ds4.h"
 
 #include <bluetooth/events/bluetooth_event.h>
@@ -23,8 +24,9 @@ DSX_LOG_TAG(DualShock4);
 
 namespace dsx {
 
-DualShock4::DualShock4(BluetoothManager &bluetoothManager)
-    : BluetoothDevice{bluetoothManager} {
+DualShock4::DualShock4(BluetoothManager &bluetoothManager, GpioManager &gpioManager)
+    : BluetoothDevice{bluetoothManager},
+      m_rGpioManager{gpioManager} {
     esp_err_t error = nvs_flash_init();
     if (error == ESP_ERR_NVS_NO_FREE_PAGES ||
         error == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -50,6 +52,19 @@ DualShock4::DualShock4(BluetoothManager &bluetoothManager)
         .eventCallback = onBluetoothEventCallback,
     };
     DSX_RESULT_CHECK(bluetoothManager.initializeHidHost(bluetoothHidHostConfig));
+
+    gpio_config_t gpioConfig = {
+        .pin_bit_mask = (1ULL << k_buttonGpioNum),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_NEGEDGE,
+    };
+    DSX_RESULT_CHECK(gpioManager.configureGpio(gpioConfig));
+
+    DSX_RESULT_CHECK(gpioManager.addInterruptHandler({k_buttonGpioNum}, [&](const gpio_num_t &gpioPin) {
+        DSX_RESULT_CHECK(discover());
+    }));
 }
 
 DualShock4::~DualShock4() = default;
