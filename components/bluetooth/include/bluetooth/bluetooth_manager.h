@@ -21,13 +21,6 @@ namespace dsx {
 
 class BluetoothManager final {
   public:
-    BluetoothManager() = default;
-    BluetoothManager(const BluetoothManager &) = delete;
-    BluetoothManager &operator=(const BluetoothManager &) = delete;
-    BluetoothManager(BluetoothManager &&) = delete;
-    BluetoothManager &operator=(BluetoothManager &&) = delete;
-    ~BluetoothManager();
-
     [[nodiscard]] Result initialize(const BluetoothManagerConfig &config);
 
     // GAP API
@@ -38,10 +31,17 @@ class BluetoothManager final {
 
     // HID Host API
     [[nodiscard]] Result initializeHidHost(const BluetoothHidHostConfig &config);
-    [[nodiscard]] Result openHidDeviceConnection(BluetoothDeviceAddress &address, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType);
-    [[nodiscard]] Result getHidDeviceFeatureReport(esp_hidh_dev_t *deviceData, size_t reportMapIndex, size_t reportId, size_t size, uint8_t *buffer, size_t *sizeOut);
+    [[nodiscard]] Result connectHidHostDevice(BluetoothDeviceAddress &address);
+    [[nodiscard]] Result disconnectHidHostDevice(BluetoothDeviceAddress &address);
+    [[nodiscard]] Result getHidHostDeviceReport(BluetoothDeviceAddress &address, esp_hidh_report_type_t reportType, uint8_t reportId, size_t reportSize);
 
-    [[nodiscard]] Result getHidDeviceBluetoothAddress(esp_hidh_dev_t *deviceData, BluetoothDeviceAddress &addressOut);
+  public:
+    BluetoothManager() = default;
+    BluetoothManager(const BluetoothManager &) = delete;
+    BluetoothManager &operator=(const BluetoothManager &) = delete;
+    BluetoothManager(BluetoothManager &&) = delete;
+    BluetoothManager &operator=(BluetoothManager &&) = delete;
+    ~BluetoothManager();
 
   private:
     Result initializeBluetoothStack(const BluetoothManagerConfig &config);

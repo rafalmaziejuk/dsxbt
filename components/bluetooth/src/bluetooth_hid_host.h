@@ -26,9 +26,9 @@ class BluetoothHidHost final {
     static Result initialize(BluetoothEventCallback eventCallback);
     static Result deinitialize();
 
-    static Result openHidDeviceConnection(BluetoothDeviceAddress &address, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType);
-    static Result getHidDeviceFeatureReport(esp_hidh_dev_t *deviceData, size_t reportMapIndex, size_t reportId, size_t size, uint8_t *buffer, size_t *sizeOut);
-    static Result getHidDeviceBluetoothAddress(esp_hidh_dev_t *deviceData, BluetoothDeviceAddress &addressOut);
+    static Result connectDevice(BluetoothDeviceAddress &address);
+    static Result disconnectDevice(BluetoothDeviceAddress &address);
+    static Result getDeviceReport(BluetoothDeviceAddress &address, esp_hidh_report_type_t reportType, uint8_t reportId, size_t size);
 };
 
 } // namespace dsx

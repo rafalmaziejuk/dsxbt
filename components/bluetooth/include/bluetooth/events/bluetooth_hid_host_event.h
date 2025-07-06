@@ -19,14 +19,14 @@
 namespace dsx {
 
 struct BluetoothHidDeviceOpenEvent {
-    esp_hidh_dev_t *deviceData;
-    esp_err_t status;
+    esp_hidh_status_t status;
+    esp_hidh_connection_state_t connectionState;
+    BluetoothDeviceAddress address;
 };
 
 struct BluetoothHidDeviceCloseEvent {
-    esp_hidh_dev_t *deviceData;
-    int32_t reason;
-    esp_err_t status;
+    esp_hidh_status_t status;
+    esp_hidh_connection_state_t connectionState;
 };
 
 } // namespace dsx

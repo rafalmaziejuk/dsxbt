@@ -133,7 +133,7 @@ void DualShock4::onRemoteServiceRecordDiscoveredEvent(const BluetoothRemoteServi
         DSX_LOGI("dualshock 4 controller discovered successfully");
 
         DSX_LOGI("opening connection with dualshock 4 controller");
-        DSX_RESULT_CHECK(m_rBluetoothManager.openHidDeviceConnection(m_address, ESP_HID_TRANSPORT_BT, BLE_ADDR_TYPE_PUBLIC));
+        DSX_RESULT_CHECK(m_rBluetoothManager.connectHidHostDevice(m_address));
     } else {
         DSX_LOGE("unable to discover remote hid service for discovered device");
         m_state = BluetoothDeviceState::k_unknown;
@@ -141,27 +141,34 @@ void DualShock4::onRemoteServiceRecordDiscoveredEvent(const BluetoothRemoteServi
 }
 
 void DualShock4::onHidDeviceOpenedEvent(const BluetoothHidDeviceOpenEvent &event) {
-    if (event.status == ESP_OK) {
-        DSX_LOGI("connection with dualshock 4 controller opened successfully");
+    if (m_state == BluetoothDeviceState::k_connected) {
+        DSX_LOGI("connection with dualshock 4 controller already opened");
+        return;
+    }
 
-        if (m_state != BluetoothDeviceState::k_discovered) {
-            DSX_RESULT_CHECK(m_rBluetoothManager.getHidDeviceBluetoothAddress(event.deviceData, m_address));
-        }
-        m_state = BluetoothDeviceState::k_connected;
-    } else {
+    if (event.status != ESP_OK) {
         DSX_LOGE("unable to open connection with dualshock 4 controller");
         m_state = BluetoothDeviceState::k_unknown;
+        return;
     }
+
+    DSX_LOGI("connection with dualshock 4 controller opened successfully");
+
+    if (m_state != BluetoothDeviceState::k_discovered) {
+        m_address = event.address;
+    }
+
+    m_state = BluetoothDeviceState::k_connected;
 }
 
 void DualShock4::onHidDeviceClosedEvent(const BluetoothHidDeviceCloseEvent &event) {
     if (event.status == ESP_OK) {
         DSX_LOGI("connection with dualshock 4 controller closed successfully");
-
-        m_state = BluetoothDeviceState::k_unknown;
     } else {
         DSX_LOGE("unable to close connection with dualshock 4 controller");
     }
+
+    m_state = BluetoothDeviceState::k_unknown;
 }
 
 } // namespace dsx
