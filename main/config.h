@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "ds4.h"
+#pragma once
 
-DSX_LOG_TAG(Main);
+#include <soc/gpio_num.h>
 
-extern "C" void app_main() {
-    dsx::GpioManager gpioManager{};
-    DSX_RESULT_CHECK(gpioManager.installInterruptService());
+namespace dsx {
 
-    dsx::BluetoothManager bluetoothManager{};
-    dsx::DualShock4 controller{bluetoothManager, gpioManager};
+constexpr inline gpio_num_t k_buttonGpioNum = GPIO_NUM_16;
 
-    while (true) {
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
-    }
 }
