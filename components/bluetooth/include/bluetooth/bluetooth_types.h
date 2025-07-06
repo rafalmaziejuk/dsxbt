@@ -17,7 +17,7 @@
 #include <esp_bt.h>
 #include <esp_bt_defs.h>
 #include <esp_gap_bt_api.h>
-#include <esp_hidh.h>
+#include <esp_hidh_api.h>
 
 #include <array>
 #include <cstdint>

@@ -88,22 +88,22 @@ Result BluetoothManager::startRemoteServiceRecordDiscovery(BluetoothDeviceAddres
     return BluetoothGap::startRemoteServiceRecordDiscovery(address, uuid);
 }
 
-Result BluetoothManager::openHidDeviceConnection(BluetoothDeviceAddress &address, esp_hid_transport_t transport, esp_ble_addr_type_t bleAddressType) {
+Result BluetoothManager::connectHidHostDevice(BluetoothDeviceAddress &address) {
     assert(m_isInitialized && m_isHidHostInitialized);
 
-    return BluetoothHidHost::openHidDeviceConnection(address, transport, bleAddressType);
+    return BluetoothHidHost::connectDevice(address);
 }
 
-Result BluetoothManager::getHidDeviceFeatureReport(esp_hidh_dev_t *deviceData, size_t reportMapIndex, size_t reportId, size_t size, uint8_t *buffer, size_t *sizeOut) {
+Result BluetoothManager::disconnectHidHostDevice(BluetoothDeviceAddress &address) {
     assert(m_isInitialized && m_isHidHostInitialized);
 
-    return BluetoothHidHost::getHidDeviceFeatureReport(deviceData, reportMapIndex, reportId, size, buffer, sizeOut);
+    return BluetoothHidHost::disconnectDevice(address);
 }
 
-Result BluetoothManager::getHidDeviceBluetoothAddress(esp_hidh_dev_t *deviceData, BluetoothDeviceAddress &addressOut) {
+Result BluetoothManager::getHidHostDeviceReport(BluetoothDeviceAddress &address, esp_hidh_report_type_t reportType, uint8_t reportId, size_t reportSize) {
     assert(m_isInitialized && m_isHidHostInitialized);
 
-    return BluetoothHidHost::getHidDeviceBluetoothAddress(deviceData, addressOut);
+    return BluetoothHidHost::getDeviceReport(address, reportType, reportId, reportSize);
 }
 
 Result BluetoothManager::initializeBluetoothStack(const BluetoothManagerConfig &config) {
